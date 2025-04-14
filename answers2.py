@@ -4,11 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Mount Drive and Load the dataset ( using 'Dataset.csv')
-from google.colab import drive
-drive.mount('/content/drive')
-
-df = pd.read_csv('/content/drive/MyDrive/Untitled/Dataset.csv')  # file path 
+# Load the dataset ( using 'Dataset.csv')
+df = pd.read_csv('Dataset.csv')  # file path 
 
 # Data Cleaning
 # ---------------
