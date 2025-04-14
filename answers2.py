@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-def load_data(file_path):
+def load_data(Dataset.csv):
     """Load dataset from the given file path."""
     if not os.path.exists(Dataset.csv):
         raise FileNotFoundError(f"Dataset file '{Dataset.csv}' not found.")
