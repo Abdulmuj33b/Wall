@@ -7,9 +7,9 @@ import seaborn as sns
 
 def load_data(file_path):
     """Load dataset from the given file path."""
-    if not os.path.exists(file_path):
-        raise FileNotFoundError(f"Dataset file '{file_path}' not found.")
-    return pd.read_csv(file_path)
+    if not os.path.exists(Dataset.csv):
+        raise FileNotFoundError(f"Dataset file '{Dataset.csv}' not found.")
+    return pd.read_csv(Dataset.csv)
 
 def clean_data(df):
     """Clean the dataset."""
