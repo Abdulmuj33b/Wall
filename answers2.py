@@ -1,108 +1,63 @@
-# Import libraries
-import os
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from google.colab import drive
+drive.mount('/content/drive')
+# Load the dataset
+file_path = '/content/drive/MyDrive/Untitled/Dataset.csv'  # Update with the actual file path
+df = pd.read_csv(file_path)
 
-def load_data(Dataset.csv):
-    """Load dataset from the given file path."""
-    if not os.path.exists(Dataset.csv):
-        raise FileNotFoundError(f"Dataset file '{Dataset.csv}' not found.")
-    return pd.read_csv(Dataset.csv)
+# Data Cleaning
+df.dropna(subset=["Product", "Total"], inplace=True)  # Removing rows with missing values
+df["Total"] = df["Total"].astype(float)  # Ensure 'Total' is a numeric type
+df["Date"] = pd.to_datetime(df["Date"])  # Convert Date column to datetime
 
-def clean_data(df):
-    """Clean the dataset."""
-    # Check for missing values
-    print("Missing values:\n", df.isnull().sum())
+# Summary statistics
+print("Dataset Summary:\n", df.describe())
+print("\nMissing Values:\n", df.isnull().sum())
 
-    # Drop duplicates
-    df = df.drop_duplicates()
+# Exploratory Data Analysis (EDA)
+plt.figure(figsize=(10, 5))
+sns.histplot(df["Total"], bins=30, kde=True)
+plt.title("Distribution of Total Sales")
+plt.xlabel("Total Sales ($)")
+plt.ylabel("Frequency")
+plt.show()
 
-    # Convert 'Date' to datetime
-    if 'Date' in df.columns:
-        df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+# Sales Trends Over Time
+plt.figure(figsize=(12, 6))
+df.groupby(df["Date"].dt.month)["Total"].sum().plot(kind="line", marker="o")
+plt.title("Monthly Sales Trend")
+plt.xlabel("Month")
+plt.ylabel("Total Sales ($)")
+plt.xticks(range(1, 13))
+plt.show()
 
-    # Validate 'total' = quantity * price
-    df['calculated_total'] = df['quantity'] * df['price']
-    mismatch = df[df['calculated_total'] != df['total']]
-    if not mismatch.empty:
-        print(f"\nFound {len(mismatch)} mismatched rows in 'total'. Overwriting with calculated values.")
-    df['total'] = np.where(df['calculated_total'] != df['total'], df['calculated_total'], df['total'])
-    df.drop('calculated_total', axis=1, inplace=True)
+# Most Frequently Purchased Products
+plt.figure(figsize=(10, 5))
+df["Product"].value_counts().plot(kind="bar", color="skyblue")
+plt.title("Most Purchased Products")
+plt.xlabel("Product")
+plt.ylabel("Frequency")
+plt.xticks(rotation=45)
+plt.show()
 
-    return df
+# Top Customers Based on Spending
+top_customers = df.groupby("CustomerID")["Total"].sum().sort_values(ascending=False).head(10)
+plt.figure(figsize=(10, 5))
+top_customers.plot(kind="bar", color="salmon")
+plt.title("Top 10 Customers by Total Spending")
+plt.xlabel("Customer ID")
+plt.ylabel("Total Amount Spent ($)")
+plt.xticks(rotation=45)
+plt.show()
 
-def analyze_data(df):
-    """Perform exploratory data analysis."""
-    # Summary statistics
-    print("\nSummary Statistics:\n", df.describe())
+# Correlation between Quantity and Total Sales
+plt.figure(figsize=(8, 5))
+sns.scatterplot(data=df, x="Quantity", y="Total")
+plt.title("Quantity vs. Total Sales")
+plt.xlabel("Quantity")
+plt.ylabel("Total Sales ($)")
+plt.show()
 
-    # Total revenue
-    total_revenue = df['total'].sum()
-    print(f"\nTotal Revenue: ${total_revenue:,.2f}")
-
-    # Top 10 products by revenue
-    product_revenue = df.groupby('product')['total'].sum().sort_values(ascending=False)
-    print("\nTop Products by Revenue:\n", product_revenue.head(10))
-
-    # Top customers
-    top_customers = df.groupby('customerID')['total'].sum().sort_values(ascending=False).head(5)
-    print("\nTop Customers:\n", top_customers)
-
-    return product_revenue
-
-def visualize_data(df, product_revenue):
-    """Create visualizations."""
-    # Monthly sales trend
-    df['YearMonth'] = df['Date'].dt.to_period('M')
-    monthly_sales = df.groupby('YearMonth')['total'].sum()
-
-    plt.figure(figsize=(14, 8))
-
-    # Plot 1: Line plot of Monthly Sales
-    plt.subplot(2, 2, 1)
-    sns.lineplot(x=monthly_sales.index.astype(str), y=monthly_sales.values, marker='o')
-    plt.title('Monthly Sales Trend')
-    plt.xticks(rotation=45)
-    plt.xlabel('Month')
-    plt.ylabel('Revenue ($)')
-
-    # Plot 2: Bar chart of Top Products
-    plt.subplot(2, 2, 2)
-    product_revenue.head(5).plot(kind='bar', color='skyblue')
-    plt.title('Top 5 Products by Revenue')
-    plt.ylabel('Revenue ($)')
-    plt.xlabel('Product')
-
-    # Plot 3: Histogram using Seaborn of Price Distribution
-    plt.subplot(2, 2, 3)
-    sns.histplot(df['price'], bins=20, kde=True, color='purple')
-    plt.title('Price Distribution')
-    plt.xlabel('Price')
-
-    # Plot 4: Scatter plot for Quantity vs. Revenue
-    plt.subplot(2, 2, 4)
-    sns.scatterplot(x='quantity', y='total', data=df)
-    plt.title('Quantity vs. Total Revenue')
-    plt.xlabel('Quantity')
-    plt.ylabel('Total Revenue ($)')
-
-    plt.tight_layout()
-    plt.show()
-
-# Main script
-if __name__ == "__main__":
-    FILE_PATH = 'Dataset.csv'
-
-    # Load the dataset
-    df = load_data(FILE_PATH)
-
-    # Clean the dataset
-    df = clean_data(df)
-
-    # Analyze the dataset
-    product_revenue = analyze_data(df)
-
-    # Visualize the dataset
-    visualize_data(df, product_revenue)
+print("Analysis complete! Insights have been visualized.")
